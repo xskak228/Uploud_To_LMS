@@ -8,7 +8,7 @@ class Department(SqlAlchemyBase):
     __tablename__ = 'Department'
 
     id = sqlalchemy.Column(sqlalchemy.Integer, primary_key=True, autoincrement=True)
-    title  = sqlalchemy.Column(sqlalchemy.String)
+    title = sqlalchemy.Column(sqlalchemy.String)
 
     chief = sqlalchemy.Column(sqlalchemy.String)
     members = sqlalchemy.Column(sqlalchemy.String)

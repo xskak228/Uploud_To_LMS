@@ -19,7 +19,7 @@
         <h1 class="navbar-brand"> Миссия Колонизация Марса</h1>
         <div class="navbar-brand"> Marse One</div>
         {% if current_user.is_authenticated %}
-            <a class="navbar-brand" href="/logout">{{ current_user.name }}</a>
+             <u><a class="navbar-brand" href="/logout">{{ current_user.name }}</a></u>
         {% else %}
             <p>
                 <a class="btn btn-primary " href="/register">Зарегистрироваться</a>

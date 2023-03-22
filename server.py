@@ -1,10 +1,12 @@
-from flask import Flask, render_template, redirect
+from flask import Flask, render_template, redirect, request, abort
 from flask_login import LoginManager, login_user, login_required, logout_user, current_user
 
 from data import db_session
+from data.department import Department
 from data.users import User
 from data.jobs import Jobs
 from forms.LoginForm import LoginForm
+from forms.department import DEpartment
 from forms.jobs import JobsForm
 from forms.user import RegisterForm
 
@@ -32,6 +34,79 @@ def index():
     jobs = db_sess.query(Jobs).all()
     return render_template("index.html", jobs=jobs)
 
+@app.route("/departments")
+def dep():
+    db_sess = db_session.create_session()
+    dep = db_sess.query(Department).all()
+    return render_template("departments.html", depart=dep)
+
+
+@app.route('/dep',  methods=['GET', 'POST'])
+@login_required
+def add_dep():
+    form = DEpartment()
+    if form.validate_on_submit():
+        db_sess = db_session.create_session()
+        dep = Department(
+            title=form.title.data,
+            chief=form.chief.data,
+            members=form.members.data,
+            email=form.email.data,
+            user_id=form.chief.data
+        )
+        db_sess.add(dep)
+        db_sess.commit()
+        return redirect('/departments')
+    return render_template('department.html', title='Добавление новости',
+                           form=form)
+
+@app.route('/dep/<int:id>', methods=['GET', 'POST'])
+@login_required
+def edit_dep(id):
+    form = DEpartment()
+    if request.method == "GET":
+        db_sess = db_session.create_session()
+        dep = db_sess.query(Department).filter(Department.id == id,
+                                          Department.user == current_user
+                                          ).first()
+        if dep:
+            form.title.data = dep.title
+            form.chief.data = dep.chief
+            form.members.data = dep.members
+            form.email.data = dep.email
+        else:
+            abort(404)
+    if form.validate_on_submit():
+        db_sess = db_session.create_session()
+        dep = db_sess.query(Department).filter(Department.id == id,
+                                          Department.user == current_user
+                                          ).first()
+        if dep:
+            dep.title = form.title.data
+            dep.chief = form.chief.data
+            dep.members = form.members.data
+            dep.email = form.email.data
+            db_sess.commit()
+            return redirect('/departments')
+        else:
+            abort(404)
+    return render_template('department.html',
+                           title='Редактирование новости',
+                           form=form
+                           )
+@app.route('/dep_delete/<int:id>', methods=['GET', 'POST'])
+@login_required
+def dep_delete(id):
+    db_sess = db_session.create_session()
+    dep = db_sess.query(Department).filter(Department.id == id,
+                                      Department.user == current_user
+                                      ).first()
+    if dep:
+        db_sess.delete(dep)
+        db_sess.commit()
+    else:
+        abort(404)
+    return redirect('/departments')
 
 @app.route('/register', methods=['GET', 'POST'])
 def reqister():
@@ -87,7 +162,7 @@ def logout():
 
 @app.route('/job',  methods=['GET', 'POST'])
 @login_required
-def add_news():
+def add_job():
     form = JobsForm()
     if form.validate_on_submit():
         db_sess = db_session.create_session()
@@ -98,7 +173,8 @@ def add_news():
             collaborators=form.collaborators.data,
             start_date=form.start_date.data,
             end_date=form.end_date.data,
-            is_finished=form.is_finished.data
+            is_finished=form.is_finished.data,
+
         )
         db_sess.add(jobs)
         db_sess.commit()
@@ -107,7 +183,62 @@ def add_news():
                            form=form)
 
 
+@app.route('/job/<int:id>', methods=['GET', 'POST'])
+@login_required
+def edit_news(id):
+    form = JobsForm()
+    if request.method == "GET":
+        db_sess = db_session.create_session()
+        job = db_sess.query(Jobs).filter(Jobs.id == id,
+                                          Jobs.user == current_user
+                                          ).first()
+        if job:
+            form.team_leader.data = job.team_leader
+            form.job.data = job.job
+            form.work_size.data = job.work_size
+            form.collaborators.data = job.collaborators
+            form.start_date.data = job.start_date
+            form.end_date.data = job.end_date
+            form.is_finished.data = job.is_finished
 
+        else:
+            abort(404)
+    if form.validate_on_submit():
+        db_sess = db_session.create_session()
+        job = db_sess.query(Jobs).filter(Jobs.id == id,
+                                          Jobs.user == current_user
+                                          ).first()
+        if job:
+            job.team_leader = form.team_leader.data
+            job.job = form.job.data
+            job.work_size = form.work_size.data
+            job.collaborators = form.collaborators.data
+            job.start_date = form.start_date.data
+            job.end_date = form.end_date.data
+            job.is_finished = form.is_finished.data
+            db_sess.commit()
+            return redirect('/')
+        else:
+            abort(404)
+    return render_template('jobs.html',
+                           title='Редактирование новости',
+                           form=form
+                           )
+
+
+@app.route('/job_delete/<int:id>', methods=['GET', 'POST'])
+@login_required
+def news_delete(id):
+    db_sess = db_session.create_session()
+    news = db_sess.query(Jobs).filter(Jobs.id == id,
+                                      Jobs.user == current_user
+                                      ).first()
+    if news:
+        db_sess.delete(news)
+        db_sess.commit()
+    else:
+        abort(404)
+    return redirect('/')
 
 if __name__ == '__main__':
     main()
