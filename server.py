@@ -1,7 +1,7 @@
-from flask import Flask, render_template, redirect, request, abort
+from flask import Flask, render_template, redirect, request, abort, jsonify, make_response
 from flask_login import LoginManager, login_user, login_required, logout_user, current_user
 
-from data import db_session
+from data import db_session, jobs_api
 from data.department import Department
 from data.users import User
 from data.jobs import Jobs
@@ -9,6 +9,7 @@ from forms.LoginForm import LoginForm
 from forms.department import DEpartment
 from forms.jobs import JobsForm
 from forms.user import RegisterForm
+
 
 app = Flask(__name__)
 app.config['SECRET_KEY'] = 'yandexlyceum_secret_key'
@@ -25,14 +26,25 @@ def load_user(user_id):
 
 def main():
     db_session.global_init("db/colonists.db")
+    app.register_blueprint(jobs_api.blueprint)
     app.run(port=8080, host='127.0.0.1')
 
+
+@app.errorhandler(404)
+def not_found(error):
+    return make_response(jsonify({'error': 'Not found'}), 404)
+
+
+@app.errorhandler(400)
+def bad_request(_):
+    return make_response(jsonify({'error': 'Bad Request'}), 400)
 
 @app.route("/")
 def index():
     db_sess = db_session.create_session()
     jobs = db_sess.query(Jobs).all()
     return render_template("index.html", jobs=jobs)
+
 
 @app.route("/departments")
 def dep():
@@ -41,7 +53,7 @@ def dep():
     return render_template("departments.html", depart=dep)
 
 
-@app.route('/dep',  methods=['GET', 'POST'])
+@app.route('/dep', methods=['GET', 'POST'])
 @login_required
 def add_dep():
     form = DEpartment()
@@ -60,6 +72,7 @@ def add_dep():
     return render_template('department.html', title='Добавление новости',
                            form=form)
 
+
 @app.route('/dep/<int:id>', methods=['GET', 'POST'])
 @login_required
 def edit_dep(id):
@@ -67,8 +80,8 @@ def edit_dep(id):
     if request.method == "GET":
         db_sess = db_session.create_session()
         dep = db_sess.query(Department).filter(Department.id == id,
-                                          Department.user == current_user
-                                          ).first()
+                                               Department.user == current_user
+                                               ).first()
         if dep:
             form.title.data = dep.title
             form.chief.data = dep.chief
@@ -79,8 +92,8 @@ def edit_dep(id):
     if form.validate_on_submit():
         db_sess = db_session.create_session()
         dep = db_sess.query(Department).filter(Department.id == id,
-                                          Department.user == current_user
-                                          ).first()
+                                               Department.user == current_user
+                                               ).first()
         if dep:
             dep.title = form.title.data
             dep.chief = form.chief.data
@@ -94,19 +107,22 @@ def edit_dep(id):
                            title='Редактирование новости',
                            form=form
                            )
+
+
 @app.route('/dep_delete/<int:id>', methods=['GET', 'POST'])
 @login_required
 def dep_delete(id):
     db_sess = db_session.create_session()
     dep = db_sess.query(Department).filter(Department.id == id,
-                                      Department.user == current_user
-                                      ).first()
+                                           Department.user == current_user
+                                           ).first()
     if dep:
         db_sess.delete(dep)
         db_sess.commit()
     else:
         abort(404)
     return redirect('/departments')
+
 
 @app.route('/register', methods=['GET', 'POST'])
 def reqister():
@@ -160,7 +176,7 @@ def logout():
     return redirect("/")
 
 
-@app.route('/job',  methods=['GET', 'POST'])
+@app.route('/job', methods=['GET', 'POST'])
 @login_required
 def add_job():
     form = JobsForm()
@@ -190,8 +206,8 @@ def edit_news(id):
     if request.method == "GET":
         db_sess = db_session.create_session()
         job = db_sess.query(Jobs).filter(Jobs.id == id,
-                                          Jobs.user == current_user
-                                          ).first()
+                                         Jobs.user == current_user
+                                         ).first()
         if job:
             form.team_leader.data = job.team_leader
             form.job.data = job.job
@@ -206,8 +222,8 @@ def edit_news(id):
     if form.validate_on_submit():
         db_sess = db_session.create_session()
         job = db_sess.query(Jobs).filter(Jobs.id == id,
-                                          Jobs.user == current_user
-                                          ).first()
+                                         Jobs.user == current_user
+                                         ).first()
         if job:
             job.team_leader = form.team_leader.data
             job.job = form.job.data
@@ -239,6 +255,7 @@ def news_delete(id):
     else:
         abort(404)
     return redirect('/')
+
 
 if __name__ == '__main__':
     main()
