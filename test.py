@@ -1,6 +1,7 @@
-from requests import get, post, delete
+from requests import get, post, delete, put
 
 # Good
-print(delete('http://localhost:8080/api/jobs/2').json())
-print(delete('http://localhost:8080/api/jobs/999').json())
-print(delete('http://localhost:8080/api/jobs/q').json())
+print(put('http://localhost:8080/api/jobs',
+          json={
+              id
+          }).json())
