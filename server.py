@@ -1,8 +1,8 @@
 import requests
 from flask import Flask, render_template, redirect, request, abort, jsonify, make_response
 from flask_login import LoginManager, login_user, login_required, logout_user, current_user
-
-from data import db_session, jobs_api, users_api
+from flask_restful import reqparse, abort, Api, Resource
+from data import db_session, jobs_api, users_api, users_resources
 from data.department import Department
 from data.users import User
 from data.jobs import Jobs
@@ -14,7 +14,7 @@ from forms.user import RegisterForm
 
 app = Flask(__name__)
 app.config['SECRET_KEY'] = 'yandexlyceum_secret_key'
-
+api = Api(app)
 login_manager = LoginManager()
 login_manager.init_app(app)
 
@@ -272,7 +272,6 @@ def user_city(user_id):
         response = requests.get("http://geocode-maps.yandex.ru/1.x/", params=geocoder_params)
         json_response = response.json()
 
-        print(json_response)
         pos = json_response["response"]["GeoObjectCollection"]["featureMember"][0]["GeoObject"]['Point']['pos']
 
         lon, lat = pos.split(" ")
@@ -293,4 +292,9 @@ def user_city(user_id):
 
 
 if __name__ == '__main__':
+    # для списка объектов
+    api.add_resource(users_resources.UserListResource, '/api/v2/users')
+
+    # для одного объекта
+    api.add_resource(users_resources.UserResource, '/api/v2/users/<int:user_id>')
     main()

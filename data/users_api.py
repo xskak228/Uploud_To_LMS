@@ -32,7 +32,7 @@ def get_one_user(user_id):
         return jsonify({'error': 'Not found'})
     return jsonify(
         {
-            'user': user.to_dict(only=('id', "surname", "name", "age", "position",
+            'user': user.to_dict(only=('id', "surname", "name", "age", "city_from", "position",
                                        "speciality", "address", "email", "modified_date"
                                        ))
         }
@@ -45,7 +45,7 @@ def create_user():
     if not request.json:
         return jsonify({'error': 'Empty request'})
     elif not all(key in request.json for key in
-                 ['id', "surname", "name", "age",
+                 ['id', "surname", "name", "age", "city_from",
                   "position", "speciality", "address",
                   "email", "hashed_passw    ord"]):
         return jsonify({'error': 'Bad request'})
@@ -56,6 +56,7 @@ def create_user():
         surname=request.json['surname'],
         name=request.json['name'],
         age=request.json['age'],
+        city_from=request.json['city_from'],
         position=request.json['position'],
         speciality = request.json['speciality'],
         address = request.json['address'],
@@ -77,6 +78,7 @@ def change_job(user_id):
         user.surname = request.json['surname']
         user.name = request.json['name']
         user.age = request.json['age']
+        user.city_from = request.json['city_from']
         user.position = request.json['position']
         user.speciality = request.json['speciality']
         user.address = request.json['address']
