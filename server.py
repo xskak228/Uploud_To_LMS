@@ -1,3 +1,4 @@
+import requests
 from flask import Flask, render_template, redirect, request, abort, jsonify, make_response
 from flask_login import LoginManager, login_user, login_required, logout_user, current_user
 
@@ -143,6 +144,7 @@ def reqister():
             name=form.name.data,
             email=form.email.data,
             age=form.age.data,
+            city_from=form.city_from.data,
             position=form.position.data,
             speciality=form.speciality.data,
             address=form.address.data
@@ -256,6 +258,38 @@ def news_delete(id):
     else:
         abort(404)
     return redirect('/')
+
+
+@app.route('/users_show/<int:user_id>', methods=['GET'])
+def user_city(user_id):
+    db_sess = db_session.create_session()
+    user = db_sess.query(User).filter(User.id == user_id).first()
+    if user:
+        geocoder_params = {
+            "apikey": "40d1649f-0493-4b70-98ba-98533de7710b",
+            "geocode": user.city_from,
+            "format": "json"}
+        response = requests.get("http://geocode-maps.yandex.ru/1.x/", params=geocoder_params)
+        json_response = response.json()
+
+        print(json_response)
+        pos = json_response["response"]["GeoObjectCollection"]["featureMember"][0]["GeoObject"]['Point']['pos']
+
+        lon, lat = pos.split(" ")
+        delta = "0.03"
+        params = {
+            "ll": ",".join([lon, lat]),
+            "spn": ",".join([delta, delta]),
+            "l": "map"
+        }
+        response = requests.get("http://static-maps.yandex.ru/1.x/", params=params)
+
+        with open("static/img/image.jpg", 'wb') as file:
+            file.write(response.content)
+
+        return render_template('nostalgy.html', title='Nostalgy',
+                        user=user, image="/static/img/image.jpg")
+
 
 
 if __name__ == '__main__':

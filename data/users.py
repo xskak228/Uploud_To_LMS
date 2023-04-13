@@ -17,6 +17,8 @@ class User(SqlAlchemyBase, UserMixin, SerializerMixin):
 
     age = sqlalchemy.Column(sqlalchemy.Integer)
 
+    city_from = sqlalchemy.Column(sqlalchemy.String)
+
     position = sqlalchemy.Column(sqlalchemy.String)
     speciality = sqlalchemy.Column(sqlalchemy.String)
 

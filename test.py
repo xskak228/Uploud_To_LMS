@@ -1,6 +1,3 @@
-from requests import get, post, delete, put
+from requests import get
 
-# Good
-print(get('http://localhost:8081/api/users/3').json())
-print(delete('http://localhost:8081/api/users/3').json())
-print(get('http://localhost:8081/api/users/3').json())
+print(get('http://localhost:8081/api/users_city/1').json())

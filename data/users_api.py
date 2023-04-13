@@ -97,3 +97,17 @@ def delete_job(user_id):
     db_sess.delete(user)
     db_sess.commit()
     return jsonify({'success': 'OK'})
+
+
+
+@blueprint.route('/api/users_city/<int:user_id>', methods=['GET'])
+def get_city_user(user_id):
+    db_sess = db_session.create_session()
+    user = db_sess.query(User).get(user_id)
+    if not user:
+        return jsonify({'error': 'Not found'})
+    return jsonify(
+        {
+            'user': user.to_dict(only=('id', "city_from"))
+        }
+    )
