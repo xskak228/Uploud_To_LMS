@@ -2,7 +2,7 @@ import requests
 from flask import Flask, render_template, redirect, request, abort, jsonify, make_response
 from flask_login import LoginManager, login_user, login_required, logout_user, current_user
 from flask_restful import reqparse, abort, Api, Resource
-from data import db_session, jobs_api, users_api, users_resources
+from data import db_session, jobs_api, users_api, users_resources, jobs_resources
 from data.department import Department
 from data.users import User
 from data.jobs import Jobs
@@ -294,7 +294,9 @@ def user_city(user_id):
 if __name__ == '__main__':
     # для списка объектов
     api.add_resource(users_resources.UserListResource, '/api/v2/users')
+    api.add_resource(jobs_resources.JobListResource, '/api/v2/jobs')
 
     # для одного объекта
     api.add_resource(users_resources.UserResource, '/api/v2/users/<int:user_id>')
+    api.add_resource(jobs_resources.JobResource, '/api/v2/jobs/<int:jobs_id>')
     main()

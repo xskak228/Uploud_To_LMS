@@ -1,7 +1,7 @@
 import pytest
 from requests import get
 
-link = 'http://localhost:8081/api/v2/users'
+link = 'http://localhost:8081/api/v2/jobs'
 
 
 def return_response(url):
